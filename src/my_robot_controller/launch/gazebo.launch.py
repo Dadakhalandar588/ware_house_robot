@@ -15,8 +15,6 @@ def generate_launch_description():
 
     package_path = get_package_share_directory("my_robot_controller")
 
-
-
     urdf_file = os.path.join(
         package_path,
         "urdf",
@@ -38,11 +36,8 @@ def generate_launch_description():
         check=True
     )
 
-
     with open(urdf_file, "r") as file:
         robot_description = file.read()
-
-  
 
     gazebo = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
@@ -57,11 +52,9 @@ def generate_launch_description():
                 package_path,
                 "gazebo_workspaces",
                 "warehouse.sdf"
-    )]
-}.items()
+            )]
+        }.items()
     )
-
-
 
     robot_state_publisher = Node(
         package="robot_state_publisher",
@@ -69,43 +62,50 @@ def generate_launch_description():
         output="screen",
         parameters=[
             {
-                "robot_description": robot_description
+                "robot_description": robot_description,
+                "use_sim_time": True
             }
         ]
     )
 
-
     spawn_robot = TimerAction(
-            period=5.0,
-            actions=[
+        period=5.0,
+        actions=[
             Node(
                 package="ros_gz_sim",
                 executable="create",
                 output="screen",
                 arguments=[
-                "-name", "slam_robot",
-                "-file", sdf_file,
-                "-x", "0.0",
-                "-y", "0.5",
-                "-z", "0.015"
-            ]
-        )
+                    "-name", "slam_robot",
+                    "-file", sdf_file,
+                    "-x", "0.0",    
+                    "-y", "-3.0",
+                    "-z", "0.015"
+                ]
+            )
         ]
     )
+
     bridge = Node(
         package="ros_gz_bridge",
         executable="parameter_bridge",
         arguments=[
-           "/world/ware_house/model/slam_robot/link/sliding_link/sensor/camera_sensor/camera_info@sensor_msgs/msg/CameraInfo[gz.msgs.CameraInfo",
-           "/world/ware_house/model/slam_robot/link/sliding_link/sensor/camera_sensor/image@sensor_msgs/msg/Image[gz.msgs.Image",
-           "/scan@sensor_msgs/msg/LaserScan[gz.msgs.LaserScan",
+            "/world/ware_house/model/slam_robot/link/sliding_link/sensor/camera_sensor/camera_info@sensor_msgs/msg/CameraInfo[gz.msgs.CameraInfo",
+            "/world/ware_house/model/slam_robot/link/sliding_link/sensor/camera_sensor/image@sensor_msgs/msg/Image[gz.msgs.Image",
+            "/scan@sensor_msgs/msg/LaserScan[gz.msgs.LaserScan",
             "/imu@sensor_msgs/msg/Imu[gz.msgs.IMU",
-            "/cmd_vel@geometry_msgs/msg/Twist]gz.msgs.Twist"
-
-
-        ]
-        
+            "/cmd_vel@geometry_msgs/msg/Twist]gz.msgs.Twist",
+            "/odom@nav_msgs/msg/Odometry[gz.msgs.Odometry",
+            "/tf@tf2_msgs/msg/TFMessage[gz.msgs.Pose_V",
+            "/world/ware_house/model/slam_robot/joint_state@sensor_msgs/msg/JointState[gz.msgs.Model",
+            "/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock"
+        ],
+        remappings=[
+            ("/world/ware_house/model/slam_robot/joint_state", "/joint_states")
+        ],
+        parameters=[{"use_sim_time": True}]
     )
+
 
     return LaunchDescription([
         gazebo,

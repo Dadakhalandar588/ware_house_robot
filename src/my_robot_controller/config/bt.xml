@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<root BTCPP_format="4"
+      main_tree_to_execute="NavigateToPoseWReplanningAndRecovery">
+
+  <BehaviorTree ID="NavigateToPoseWReplanningAndRecovery">
+
+    <RecoveryNode number_of_retries="15"
+                  name="NavigateRecovery">
+
+      <PipelineSequence name="NavigateWithReplanning">
+
+        <RateController hz="1.0">
+
+          <RecoveryNode number_of_retries="1"
+                        name="ComputePathToPose">
+
+            <ComputePathToPose
+              goal="{goal}"
+              path="{path}"
+              planner_id="GridBased"/>
+
+            <ClearEntireCostmap
+              name="ClearGlobalCostmap-Context"
+              service_name="global_costmap/clear_entirely_global_costmap"/>
+
+          </RecoveryNode>
+
+        </RateController>
+
+        <RecoveryNode number_of_retries="1"
+                      name="FollowPath">
+
+          <FollowPath
+            path="{path}"
+            controller_id="FollowPath"/>
+
+          <ClearEntireCostmap
+            name="ClearLocalCostmap-Context"
+            service_name="local_costmap/clear_entirely_local_costmap"/>
+
+        </RecoveryNode>
+
+      </PipelineSequence>
+
+      <ReactiveFallback name="RecoveryFallback">
+
+        <GoalUpdated/>
+
+        <SequenceWithMemory name="RecoveryActions">
+
+          <ClearEntireCostmap
+            name="ClearLocalCostmap-Recovery"
+            service_name="local_costmap/clear_entirely_local_costmap"/>
+
+          <BackUp
+            name="BackUpFromObstacle"
+            backup_dist="0.20"
+            backup_speed="0.10"/>
+
+          <ClearEntireCostmap
+            name="ClearLocalCostmap-AfterBackup"
+            service_name="local_costmap/clear_entirely_local_costmap"/>
+
+          <ClearEntireCostmap
+            name="ClearGlobalCostmap-Recovery"
+            service_name="global_costmap/clear_entirely_global_costmap"/>
+
+          <Wait
+            name="WaitAfterRecovery"
+            wait_duration="1.0"/>
+
+        </SequenceWithMemory>
+
+      </ReactiveFallback>
+
+    </RecoveryNode>
+
+  </BehaviorTree>
+
+</root>

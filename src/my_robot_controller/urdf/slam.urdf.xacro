@@ -620,39 +620,34 @@
 </gazebo>
 <!-- ======================= LIDAR ======================= -->
 <gazebo reference="lidar_link">
-
   <sensor name="lidar_sensor" type="gpu_lidar">
-  <always_on>true</always_on>
-  <update_rate>10</update_rate>
-  <visualize>true</visualize>
-
-  <topic>/scan</topic>
-
-  <lidar>
-    <scan>
-      <horizontal>
-        <samples>720</samples>
-        <resolution>1</resolution>
-        <min_angle>-1.57</min_angle>
-        <max_angle>1.57</max_angle>
-      </horizontal>
-    </scan>
-
-    <range>
-      <min>0.1</min>
-      <max>30.0</max>
-      <resolution>0.01</resolution>
-    </range>
-
-    <noise>
-      <type>gaussian</type>
-      <mean>0</mean>
-      <stddev>0.01</stddev>
-    </noise>
-  </lidar>
-
-</sensor>
-
+    <always_on>true</always_on>
+    <update_rate>20</update_rate>
+    <visualize>true</visualize>
+    <topic>/scan</topic>
+    <frame_id>lidar_link</frame_id>
+    <gz_frame_id>lidar_link</gz_frame_id>
+    <lidar>
+      <scan>
+        <horizontal>
+          <samples>720</samples>
+          <resolution>1</resolution>
+          <min_angle>-3.14159</min_angle>
+          <max_angle>3.14159</max_angle>
+        </horizontal>
+      </scan>
+      <range>
+        <min>0.15</min>
+        <max>15.0</max>
+        <resolution>0.01</resolution> 
+      </range>
+      <noise>
+        <type>gaussian</type>
+        <mean>0.0</mean>
+        <stddev>0.005</stddev>
+      </noise>
+    </lidar>
+  </sensor>
 </gazebo>
 
 
@@ -708,22 +703,18 @@
   </sensor>
 </gazebo>
 <gazebo>
-  <plugin
-      filename="gz-sim-diff-drive-system"
-      name="gz::sim::systems::DiffDrive">
-
+  <plugin filename="gz-sim-diff-drive-system" name="gz::sim::systems::DiffDrive">
     <left_joint>left_front_wheel_joint</left_joint>
     <left_joint>left_back_wheel_joint</left_joint>
-
     <right_joint>right_front_wheel_joint</right_joint>
     <right_joint>right_back_wheel_joint</right_joint>
-
     <wheel_separation>0.44</wheel_separation>
-
     <wheel_radius>0.08</wheel_radius>
-
     <topic>cmd_vel</topic>
-
+    <odom_topic>odom</odom_topic>
+    <frame_id>odom</frame_id>
+    <child_frame_id>base_link</child_frame_id>
+    <tf_topic>tf</tf_topic>
   </plugin>
 </gazebo>
 <gazebo>
@@ -763,6 +754,10 @@
     <i_gain>0</i_gain>
     <d_gain>5</d_gain>
     <topic>wrist_joint_cmd</topic>
+  </plugin>
+</gazebo>
+<gazebo>
+  <plugin filename="gz-sim-joint-state-publisher-system" name="gz::sim::systems::JointStatePublisher">
   </plugin>
 </gazebo>
 </robot>
